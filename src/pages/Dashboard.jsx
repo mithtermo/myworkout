@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, ReferenceLine, Legend,
 } from 'recharts';
 import { format, subDays, eachDayOfInterval, parseISO } from 'date-fns';
-import { getSummary, getVitals, getWorkoutHeatmap, getMealsToday } from '../lib/supabase.js';
+import { getSummary, getVitals, getWorkoutHeatmap, getMealsToday, isConfigured } from '../lib/supabase.js';
 
 const WORKOUT_COLORS = {
   gym_push:        { bg:'#D5E8F4', label:'Push',       dot:'#2E6DA4' },
@@ -137,6 +137,19 @@ export default function Dashboard() {
     </div>
   );
 
+  if (!isConfigured()) return (
+    <div className="space-y-4">
+      <div className="card bg-health-amberBg border-amber-200">
+        <div className="flex gap-3 text-health-amber">
+          <span className="text-2xl">⚙️</span>
+          <div>
+            <div className="font-bold text-sm mb-1">Supabase not connected yet</div>
+            <div className="text-xs">Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to GitHub repo secrets, then re-run the workflow. Your Plans page works now — check it out!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   if (error) return (
     <div className="card bg-health-redBg border-red-200 text-health-red text-sm">
       ⚠️ Could not load data. Check your Supabase connection: {error}
