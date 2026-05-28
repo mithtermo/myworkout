@@ -123,3 +123,98 @@ export async function getSummary() {
     workout_streak:     streak,
   };
 }
+
+// ── Analysis — week-over-week trends ─────────────────────────────────────────
+export async function getAnalysis() {
+  const [bgAll, weightAll, workoutsAll, mealsAll] = await Promise.all([
+    supabase.from('vitals').select('date,blood_glucose').not('blood_glucose','is',null)
+      .order('date', { ascending: true }),
+    supabase.from('vitals').select('date,weight_kg,waist_cm').not('weight_kg','is',null)
+      .order('date', { ascending: true }),
+    supabase.from('workouts').select('date,type,pre_bg,post_bg').gte('date', fromDay(14))
+      .order('date', { ascending: true }),
+    supabase.from('meals').select('date,meal_type').gte('date', fromDay(14)),
+  ]);
+
+  const bg      = bgAll.data || [];
+  const weights = weightAll.data || [];
+  const workouts = workoutsAll.data || [];
+  const meals   = mealsAll.data || [];
+
+  const thisWeek = fromDay(7);
+  const lastWeek = fromDay(14);
+
+  // BG averages
+  const bgThisWeek = avg(bg.filter(r => r.date >= thisWeek).map(r => r.blood_glucose));
+  const bgLastWeek = avg(bg.filter(r => r.date >= lastWeek && r.date < thisWeek).map(r => r.blood_glucose));
+  const bgAllTime  = avg(bg.map(r => r.blood_glucose));
+
+  // Latest vs previous weight
+  const w2 = weights.slice(-2);
+  const weightChange = w2.length === 2 ? +(w2[1].weight_kg - w2[0].weight_kg).toFixed(1) : null;
+  const latestWeight = weights.at(-1)?.weight_kg || null;
+  const latestWaist  = weightAll.data?.filter(r=>r.waist_cm).at(-1)?.waist_cm || null;
+
+  // Workout counts
+  const wkThisWeek = workouts.filter(r => r.date >= thisWeek && r.type !== 'rest').length;
+  const wkLastWeek = workouts.filter(r => r.date >= lastWeek && r.date < thisWeek && r.type !== 'rest').length;
+
+  // Meal logging consistency (days with ≥3 meals logged)
+  const mealDaysThis = new Set(meals.filter(r => r.date >= thisWeek).map(r => r.date)).size;
+  const mealDaysLast = new Set(meals.filter(r => r.date >= lastWeek && r.date < thisWeek).map(r => r.date)).size;
+
+  // BG response to exercise (pre vs post)
+  const bgDropSessions = workouts.filter(r => r.pre_bg && r.post_bg);
+  const avgBgDrop = avg(bgDropSessions.map(r => r.pre_bg - r.post_bg));
+
+  // Best/worst BG day this week
+  const bgThisWeekRows = bg.filter(r => r.date >= thisWeek);
+  const bestBG  = bgThisWeekRows.length ? Math.min(...bgThisWeekRows.map(r=>r.blood_glucose)) : null;
+  const worstBG = bgThisWeekRows.length ? Math.max(...bgThisWeekRows.map(r=>r.blood_glucose)) : null;
+
+  return {
+    bg: {
+      thisWeek: bgThisWeek,
+      lastWeek: bgLastWeek,
+      allTime:  bgAllTime,
+      change:   bgThisWeek && bgLastWeek ? +(bgThisWeek - bgLastWeek).toFixed(1) : null,
+      trend:    trend(bgThisWeek, bgLastWeek, 'lower'),   // lower is better for BG
+      best:     bestBG,
+      worst:    worstBG,
+    },
+    weight: {
+      latest:  latestWeight,
+      change:  weightChange,
+      trend:   weightChange != null ? (weightChange < 0 ? 'improved' : weightChange > 0 ? 'regressed' : 'stable') : 'nodata',
+      waist:   latestWaist,
+    },
+    workouts: {
+      thisWeek: wkThisWeek,
+      lastWeek: wkLastWeek,
+      change:   wkThisWeek - wkLastWeek,
+      trend:    trend(wkThisWeek, wkLastWeek, 'higher'),  // higher is better for workouts
+      target:   4,
+    },
+    meals: {
+      daysLoggedThisWeek: mealDaysThis,
+      daysLoggedLastWeek: mealDaysLast,
+      trend: trend(mealDaysThis, mealDaysLast, 'higher'),
+    },
+    exercise: {
+      avgBgDrop,
+      sessions: bgDropSessions.length,
+    },
+  };
+}
+
+function avg(arr) {
+  if (!arr.length) return null;
+  return +(arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(1);
+}
+
+function trend(current, previous, direction) {
+  if (current == null || previous == null) return 'nodata';
+  if (current === previous) return 'stable';
+  const improved = direction === 'lower' ? current < previous : current > previous;
+  return improved ? 'improved' : 'regressed';
+}
