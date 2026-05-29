@@ -218,3 +218,17 @@ function trend(current, previous, direction) {
   const improved = direction === 'lower' ? current < previous : current > previous;
   return improved ? 'improved' : 'regressed';
 }
+
+// ── Saved Analyses ────────────────────────────────────────────────────────────
+export async function saveAnalysis(payload) {
+  const { data, error } = await supabase.from('analyses').insert([payload]).select();
+  return { data, error };
+}
+
+export async function getAnalyses(limit = 20) {
+  const { data } = await supabase
+    .from('analyses').select('*')
+    .order('analysed_at', { ascending: false })
+    .limit(limit);
+  return data || [];
+}

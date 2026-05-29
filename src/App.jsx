@@ -6,6 +6,7 @@ import LogMeal    from './pages/LogMeal.jsx';
 import LogWorkout from './pages/LogWorkout.jsx';
 import History    from './pages/History.jsx';
 import Plans      from './pages/Plans.jsx';
+import Analysis   from './pages/Analysis.jsx';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Routes>
           <Route path="/"            element={<Dashboard />} />
           <Route path="/plans"       element={<Plans />} />
+          <Route path="/analysis"    element={<Analysis />} />
           <Route path="/log/vitals"  element={<LogVitals />} />
           <Route path="/log/meal"    element={<LogMeal />} />
           <Route path="/log/workout" element={<LogWorkout />} />

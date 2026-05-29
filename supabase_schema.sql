@@ -63,3 +63,30 @@ ALTER TABLE workouts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public access" ON vitals   FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public access" ON meals    FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Public access" ON workouts FOR ALL USING (true) WITH CHECK (true);
+
+-- ── Analysis history ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS analyses (
+  id               BIGSERIAL PRIMARY KEY,
+  analysed_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  period_label     TEXT,                      -- e.g. "28 May 2026"
+  period_days      INTEGER DEFAULT 30,
+  health_score     INTEGER,                   -- 0-100
+  bg_avg           NUMERIC(4,1),
+  bg_trend         TEXT,
+  bg_best          NUMERIC(4,1),
+  bg_worst         NUMERIC(4,1),
+  weight_kg        NUMERIC(5,1),
+  weight_change    NUMERIC(4,1),
+  weight_trend     TEXT,
+  waist_cm         NUMERIC(5,1),
+  workouts_count   INTEGER,
+  workouts_target  INTEGER DEFAULT 4,
+  workout_trend    TEXT,
+  meals_days       INTEGER,
+  avg_bg_drop      NUMERIC(4,1),
+  insights         JSONB DEFAULT '[]',
+  recommendations  JSONB DEFAULT '[]',
+  raw_data         JSONB DEFAULT '{}'
+);
+ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public access" ON analyses FOR ALL USING (true) WITH CHECK (true);

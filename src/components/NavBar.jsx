@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 const links = [
   { to:'/',            label:'Dashboard', icon:'📊' },
   { to:'/plans',       label:'Plans',     icon:'📋' },
+  { to:'/analysis',   label:'Analysis',  icon:'🔬' },
   { to:'/log/vitals',  label:'Vitals',    icon:'🩸' },
   { to:'/log/meal',    label:'Meal',      icon:'🍽️' },
   { to:'/log/workout', label:'Workout',   icon:'💪' },
@@ -28,11 +29,11 @@ export default function NavBar() {
           </div>
         </div>
         {/* Mobile nav */}
-        <div className="sm:hidden flex justify-around py-1.5 border-t border-brand-600">
+        <div className="sm:hidden flex justify-around py-1.5 border-t border-brand-600 overflow-x-auto gap-1">
           {links.map(l => (
             <NavLink key={l.to} to={l.to} end={l.to==='/'}
               className={({ isActive }) =>
-                `flex flex-col items-center text-xs gap-0.5 px-1 py-1 rounded-lg transition-colors ${isActive?'text-white':'text-brand-300'}`}>
+                `flex flex-col items-center text-xs gap-0.5 px-1 py-1 rounded-lg transition-colors shrink-0 ${isActive?'text-white':'text-brand-300'}`}>
               <span className="text-base">{l.icon}</span>
               <span>{l.label}</span>
             </NavLink>
