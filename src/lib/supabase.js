@@ -232,3 +232,140 @@ export async function getAnalyses(limit = 20) {
     .limit(limit);
   return data || [];
 }
+
+// ── Full deep analysis — BG + Food + Workouts ─────────────────────────────────
+export async function getFullAnalysis(days = 14) {
+  const since = fromDay(days);
+  const thisWeek = fromDay(7);
+  const lastWeek = fromDay(14);
+
+  const [vitalsR, mealsR, workoutsR] = await Promise.all([
+    supabase.from('vitals').select('*').gte('date', since).order('date').order('time', { nullsFirst: false }),
+    supabase.from('meals').select('*').gte('date', since).order('date').order('time', { nullsFirst: false }),
+    supabase.from('workouts').select('*').gte('date', since).order('date'),
+  ]);
+
+  const vitals   = vitalsR.data   || [];
+  const meals    = mealsR.data    || [];
+  const workouts = workoutsR.data || [];
+
+  // ── BG analysis ──
+  const bgRows     = vitals.filter(v => v.blood_glucose);
+  const bgThis     = bgRows.filter(r => r.date >= thisWeek).map(r => +r.blood_glucose);
+  const bgLast     = bgRows.filter(r => r.date < thisWeek).map(r => +r.blood_glucose);
+  const avgBgThis  = avg(bgThis);
+  const avgBgLast  = avg(bgLast);
+
+  // ── Weight ──
+  const wRows = vitals.filter(v => v.weight_kg).map(v => +v.weight_kg);
+  const latestWeight = wRows.at(-1) || null;
+  const firstWeight  = wRows[0] || null;
+
+  // ── Workouts ──
+  const wkThis  = workouts.filter(w => w.date >= thisWeek && w.type !== 'rest');
+  const wkLast  = workouts.filter(w => w.date < thisWeek && w.type !== 'rest');
+  const bgDrops = workouts.filter(w => w.pre_bg && w.post_bg).map(w => +((+w.pre_bg) - (+w.post_bg)).toFixed(1));
+  const typeCount = {};
+  workouts.forEach(w => { typeCount[w.type] = (typeCount[w.type] || 0) + 1; });
+
+  // ── Food habit analysis ──
+  // 1. Meal type frequency
+  const mealTypeCount = {};
+  meals.forEach(m => { mealTypeCount[m.meal_type] = (mealTypeCount[m.meal_type] || 0) + 1; });
+
+  // 2. Food frequency — parse food_items into individual items
+  const foodCount = {};
+  meals.forEach(m => {
+    if (!m.food_items) return;
+    const items = m.food_items.split(/,|;|\+|and/i).map(f => f.trim().toLowerCase()).filter(f => f.length > 2);
+    items.forEach(f => { foodCount[f] = (foodCount[f] || 0) + 1; });
+  });
+  const topFoods = Object.entries(foodCount).sort((a,b) => b[1]-a[1]).slice(0, 10);
+
+  // 3. Meal timing — late dinners (after 21:00)
+  const dinners = meals.filter(m => m.meal_type === 'dinner' && m.time);
+  const lateDinners = dinners.filter(m => m.time >= '21:00');
+  const lateDinnerPct = dinners.length ? Math.round((lateDinners.length / dinners.length) * 100) : null;
+
+  // 4. Breakfast skip rate
+  const loggedDates = [...new Set(meals.map(m => m.date))];
+  const breakfastDates = new Set(meals.filter(m => m.meal_type === 'breakfast').map(m => m.date));
+  const breakfastSkipRate = loggedDates.length
+    ? Math.round(((loggedDates.length - breakfastDates.size) / loggedDates.length) * 100) : null;
+
+  // 5. Avg calories (days with calorie data)
+  const calDays = {};
+  meals.filter(m => m.calories).forEach(m => {
+    calDays[m.date] = (calDays[m.date] || 0) + (+m.calories);
+  });
+  const calVals = Object.values(calDays);
+  const avgCalories = avg(calVals);
+
+  // 6. Pre/post gym meals compliance
+  const gymDays = new Set(workouts.filter(w => w.type.startsWith('gym_')).map(w => w.date));
+  const preGymMeals  = meals.filter(m => m.meal_type === 'pre_gym' && gymDays.has(m.date)).length;
+  const postGymMeals = meals.filter(m => m.meal_type === 'post_gym' && gymDays.has(m.date)).length;
+  const gymDayCount  = gymDays.size;
+
+  // 7. Bad foods detection (foods known to spike BG)
+  const badFoods = ['chicken bun', 'bun', 'white rice', 'fried', 'sugar', 'sweet', 'biscuit', 'juice', 'cake', 'chocolate', 'chips', 'soda'];
+  const flaggedFoods = [];
+  meals.forEach(m => {
+    if (!m.food_items) return;
+    const lower = m.food_items.toLowerCase();
+    badFoods.forEach(b => { if (lower.includes(b) && !flaggedFoods.includes(b)) flaggedFoods.push(b); });
+  });
+
+  // 8. Meal days logged this week
+  const mealDaysThis = new Set(meals.filter(m => m.date >= thisWeek).map(m => m.date)).size;
+  const mealDaysLast = new Set(meals.filter(m => m.date < thisWeek).map(m => m.date)).size;
+
+  return {
+    period: { since, days },
+    vitals,
+    meals,
+    workouts,
+    bg: {
+      rows:    bgRows,
+      avgThis: avgBgThis,
+      avgLast: avgBgLast,
+      trend:   trend(avgBgThis, avgBgLast, 'lower'),
+      best:    bgThis.length ? Math.min(...bgThis) : null,
+      worst:   bgThis.length ? Math.max(...bgThis) : null,
+      allVals: bgRows.map(r => ({ date: r.date, time: r.time, val: +r.blood_glucose })),
+    },
+    weight: {
+      latest:  latestWeight,
+      first:   firstWeight,
+      change:  latestWeight && firstWeight ? +(latestWeight - firstWeight).toFixed(1) : null,
+      trend:   trend(latestWeight, firstWeight, 'lower'),
+      rows:    vitals.filter(v=>v.weight_kg).map(v=>({ date: v.date, val: +v.weight_kg })),
+    },
+    workouts_: {
+      thisWeek: wkThis.length,
+      lastWeek: wkLast.length,
+      target:   4,
+      typeBreakdown: typeCount,
+      bgDrops,
+      avgBgDrop: avg(bgDrops),
+      rows:     workouts,
+    },
+    food: {
+      mealTypeCount,
+      topFoods,
+      lateDinners:      lateDinners.length,
+      totalDinners:     dinners.length,
+      lateDinnerPct,
+      breakfastSkipRate,
+      avgCalories,
+      preGymCompliance:  gymDayCount ? Math.round((preGymMeals/gymDayCount)*100) : null,
+      postGymCompliance: gymDayCount ? Math.round((postGymMeals/gymDayCount)*100) : null,
+      gymDayCount,
+      flaggedFoods,
+      mealDaysThis,
+      mealDaysLast,
+      totalMeals: meals.length,
+      rows: meals,
+    },
+  };
+}
