@@ -108,23 +108,49 @@ const EX_VIDEO = {
 
 // Mini photo modal (image full-size + video)
 function PhotoModal({ name, videoId, onClose }) {
+  const photo = gymPhoto(name);
+  const [showPhoto, setShowPhoto] = React.useState(false);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3"
       style={{background:'rgba(0,0,0,0.82)'}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
           <span className="font-bold text-brand-700 text-sm">{name}</span>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
         </div>
+        {/* YouTube tutorial video */}
         <div className="relative w-full" style={{paddingBottom:'56.25%'}}>
           <iframe className="absolute inset-0 w-full h-full"
             src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1`}
             title={name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen />
         </div>
-        <div className="p-3 text-center">
-          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700">Close</button>
+        {/* Your actual gym machine photo */}
+        {photo && (
+          <div className="border-t border-gray-100">
+            <div className="px-4 py-2 flex items-center justify-between bg-gray-50">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">📸 Your Gym Machine</span>
+              <button onClick={()=>setShowPhoto(p=>!p)} className="text-xs text-brand-500 font-medium">
+                {showPhoto ? 'Hide photo' : 'Show photo'}
+              </button>
+            </div>
+            {showPhoto && (
+              <img src={photo} alt={`${name} in your gym`}
+                className="w-full object-cover" style={{maxHeight:320}}
+                loading="lazy" />
+            )}
+            {!showPhoto && (
+              <button onClick={()=>setShowPhoto(true)}
+                className="w-full py-3 flex items-center justify-center gap-2 text-sm text-brand-600 hover:bg-brand-50 transition-colors">
+                <span className="text-lg">📷</span>
+                <span>Tap to see the machine in your gym</span>
+              </button>
+            )}
+          </div>
+        )}
+        <div className="p-3 text-center border-t border-gray-100">
+          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700 px-6 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">Close</button>
         </div>
       </div>
     </div>
@@ -156,11 +182,11 @@ function ExTable({ headers, rows }) {
                   <td key={ci} className={`px-2 py-1.5 border-b border-gray-100 ${ci===0?'font-medium text-brand-700':'text-gray-600'}`}>
                     {ci===0 ? (
                       <div className="flex items-center gap-2">
-                        {thumb && (
+                        {(thumb || gymPhoto(exName)) && (
                           <button type="button" onClick={()=>setPhoto({name:exName,videoId:vidId})}
                             className="flex-shrink-0 relative rounded overflow-hidden hover:ring-2 hover:ring-brand-400 transition-all"
                             style={{width:52,height:32}} title="Tap to see machine photo & video">
-                            <img src={thumb} alt={exName} loading="lazy"
+                            <img src={gymPhoto(exName) || thumb} alt={exName} loading="lazy"
                               className="w-full h-full object-cover"/>
                             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all">
                               <div className="w-0 h-0" style={{borderTop:'4px solid transparent',borderBottom:'4px solid transparent',borderLeft:'7px solid white'}}/>
@@ -465,14 +491,16 @@ const MACHINES = [
 
 // ── Video Modal ───────────────────────────────────────────────────────────────
 function VideoModal({ machine, onClose }) {
+  const photo = gymPhoto(machine.name);
+  const [showPhoto, setShowPhoto] = React.useState(false);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-3"
       style={{ background: 'rgba(0,0,0,0.80)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-gray-100">
+        <div className="flex items-start justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
           <div>
             <h3 className="font-bold text-brand-700 text-sm leading-tight">{machine.name}</h3>
             <p className="text-xs text-gray-500 mt-0.5">{machine.muscle}</p>
@@ -480,7 +508,7 @@ function VideoModal({ machine, onClose }) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none ml-3">×</button>
         </div>
 
-        {/* Video embed */}
+        {/* Tutorial video */}
         <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
           <iframe
             className="absolute inset-0 w-full h-full"
@@ -491,8 +519,32 @@ function VideoModal({ machine, onClose }) {
           />
         </div>
 
+        {/* Your real gym machine photo */}
+        {photo && (
+          <div className="border-t border-gray-100">
+            <div className="px-4 py-2 flex items-center justify-between bg-gray-50">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">📸 Your Gym Machine (Muscat)</span>
+              <button onClick={()=>setShowPhoto(p=>!p)} className="text-xs text-brand-500 font-medium">
+                {showPhoto ? 'Hide' : 'Show photo'}
+              </button>
+            </div>
+            {showPhoto ? (
+              <img src={photo} alt={machine.name}
+                className="w-full object-cover cursor-pointer"
+                style={{maxHeight:360}} loading="lazy"
+                onClick={()=>setShowPhoto(false)} />
+            ) : (
+              <button onClick={()=>setShowPhoto(true)}
+                className="w-full py-3 flex items-center justify-center gap-2 text-sm text-brand-600 hover:bg-brand-50 transition-colors">
+                <span className="text-xl">📷</span>
+                <span>Tap to see the machine in your gym</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Tip */}
-        <div className="p-4">
+        <div className="p-4 border-t border-gray-100">
           <div className="flex gap-2 items-start bg-brand-50 rounded-xl p-3">
             <span className="text-lg flex-shrink-0">💡</span>
             <p className="text-xs text-brand-700">{machine.tip}</p>
@@ -523,10 +575,10 @@ function MachineGallery() {
             onClick={() => setActive(m)}
             className="group rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-brand-400 hover:shadow-md transition-all text-left">
 
-            {/* Thumbnail */}
+            {/* Thumbnail — show real gym photo if available, else YouTube */}
             <div className="relative overflow-hidden" style={{ paddingBottom: '56.25%' }}>
               <img
-                src={`https://img.youtube.com/vi/${m.videoId}/mqdefault.jpg`}
+                src={gymPhoto(m.name) || `https://img.youtube.com/vi/${m.videoId}/mqdefault.jpg`}
                 alt={m.name}
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
