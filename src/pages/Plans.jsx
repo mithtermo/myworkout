@@ -51,21 +51,130 @@ function Table({ headers, rows, colColors = [] }) {
   );
 }
 
+// Lookup: exercise name → YouTube videoId for thumbnail
+const EX_VIDEO = {
+  'Horizontal Bench Press':         'vcBig73ojpE',
+  'Life Fitness Horizontal Bench Press': 'vcBig73ojpE',
+  'Decline Press':                   'LfyQBUKR8SE',
+  'Life Fitness Decline Press':      'LfyQBUKR8SE',
+  'Cable / dumbbell flyes':          'taI4XduLpTk',
+  'Cable Crossover / Pec Deck':      'taI4XduLpTk',
+  'Seated dumbbell shoulder press':  '1-LxQCCsL40',
+  'Dumbbell Shoulder Press':         '1-LxQCCsL40',
+  'Lateral raises':                  '3VcKaXpzqRo',
+  'Lateral Raises':                  '3VcKaXpzqRo',
+  'Tricep pushdowns (cable)':        '0326dy_-CzM',
+  'Seated Dip':                      '0326dy_-CzM',
+  'Hoist Seated Dip':                '0326dy_-CzM',
+  'Lat pulldown':                    'CAwf7n6Luuc',
+  'Lat Pulldown':                    'CAwf7n6Luuc',
+  'Hoist Lat Pulldown':              'CAwf7n6Luuc',
+  'Seated cable row':                'GZbfZ033f74',
+  'Seated Cable Row':                'GZbfZ033f74',
+  'Hammer Strength Row':             'GZbfZ033f74',
+  'Dumbbell single-arm row':         'GZbfZ033f74',
+  'Face pulls (cable)':              'HSoHeSJ-_lI',
+  'Face Pulls':                      'HSoHeSJ-_lI',
+  'Barbell / dumbbell curls':        'fIWP-FRFNU0',
+  'Preacher Curl':                   'fIWP-FRFNU0',
+  'Hoist Preacher Curl':             'fIWP-FRFNU0',
+  'Hammer curls':                    'zC3nLlEvin4',
+  'Hammer Curl':                     'zC3nLlEvin4',
+  'Leg press':                       'IZxyjW7MPJQ',
+  'Angled Leg Press':                'IZxyjW7MPJQ',
+  'Life Fitness Angled Leg Press':   'IZxyjW7MPJQ',
+  'Hack Squat':                      'EdtPMnMxKCo',
+  'Leg extension':                   'YyvSfVjQeL0',
+  'Leg Extension':                   'YyvSfVjQeL0',
+  'Leg curl (lying)':                'ELOCsoDSmrg',
+  'Leg Curl':                        'ELOCsoDSmrg',
+  'Calf raises (machine)':           'gwLzBJYoWlI',
+  'Calf Raises':                     'gwLzBJYoWlI',
+  'Hip Thrust':                      'LM8XHLYJoYs',
+  'Plank':                           'ASdvN_XEl_c',
+  'Russian twists':                  'wkD8rjkodUI',
+  'Goblet squat':                    'MeIiIdhvXT4',
+  'Dumbbell Romanian deadlift':      'hCDzSR6bW10',
+  'Push-ups':                        'IODxDxX7oi4',
+  'Dumbbell bent-over row':          'GZbfZ033f74',
+  'Dumbbell bicep curls':            'fIWP-FRFNU0',
+  'Mountain climbers':               'nmwgirgXLYM',
+  'Treadmill':                       'sSFmSVBIe-g',
+  'Treadmill walk':                  'sSFmSVBIe-g',
+  'Treadmill incline':               'sSFmSVBIe-g',
+  'Bike / elliptical':               'Yz0V7u7FhOk',
+  'Elliptical':                      'Yz0V7u7FhOk',
+};
+
+// Mini photo modal (image full-size + video)
+function PhotoModal({ name, videoId, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      style={{background:'rgba(0,0,0,0.82)'}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <span className="font-bold text-brand-700 text-sm">{name}</span>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+        </div>
+        <div className="relative w-full" style={{paddingBottom:'56.25%'}}>
+          <iframe className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1`}
+            title={name} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen />
+        </div>
+        <div className="p-3 text-center">
+          <button onClick={onClose} className="text-sm text-gray-500 hover:text-gray-700">Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ExTable({ headers, rows }) {
+  const [photo, setPhoto] = React.useState(null); // {name, videoId}
   return (
     <div className="overflow-x-auto">
+      {photo && <PhotoModal name={photo.name} videoId={photo.videoId} onClose={()=>setPhoto(null)}/>}
       <table className="w-full text-xs border-collapse">
         <thead>
           <tr>{headers.map((h,i)=><th key={i} className="bg-brand-500 text-white text-left px-2.5 py-1.5 font-semibold">{h}</th>)}</tr>
         </thead>
         <tbody>
-          {rows.map((row,ri)=>(
-            <tr key={ri} className={ri%2===0?'bg-white':'bg-gray-50'}>
-              {row.map((cell,ci)=>(
-                <td key={ci} className={`px-2.5 py-1.5 border-b border-gray-100 ${ci===0?'font-medium text-brand-700':'text-gray-600'}`}>{cell}</td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((row,ri)=>{
+            const exName = row[0];
+            // find videoId by checking if any EX_VIDEO key is contained in exercise name (case-insensitive)
+            const vidKey = Object.keys(EX_VIDEO).find(k =>
+              exName.toLowerCase().includes(k.toLowerCase()) ||
+              k.toLowerCase().includes(exName.toLowerCase().split('(')[0].trim())
+            );
+            const vidId = vidKey ? EX_VIDEO[vidKey] : null;
+            const thumb = vidId ? `https://img.youtube.com/vi/${vidId}/mqdefault.jpg` : null;
+            return (
+              <tr key={ri} className={ri%2===0?'bg-white':'bg-gray-50'}>
+                {row.map((cell,ci)=>(
+                  <td key={ci} className={`px-2 py-1.5 border-b border-gray-100 ${ci===0?'font-medium text-brand-700':'text-gray-600'}`}>
+                    {ci===0 ? (
+                      <div className="flex items-center gap-2">
+                        {thumb && (
+                          <button type="button" onClick={()=>setPhoto({name:exName,videoId:vidId})}
+                            className="flex-shrink-0 relative rounded overflow-hidden hover:ring-2 hover:ring-brand-400 transition-all"
+                            style={{width:52,height:32}} title="Tap to see machine photo & video">
+                            <img src={thumb} alt={exName} loading="lazy"
+                              className="w-full h-full object-cover"/>
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 hover:bg-opacity-40 transition-all">
+                              <div className="w-0 h-0" style={{borderTop:'4px solid transparent',borderBottom:'4px solid transparent',borderLeft:'7px solid white'}}/>
+                            </div>
+                          </button>
+                        )}
+                        <span>{cell}</span>
+                      </div>
+                    ) : cell}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
