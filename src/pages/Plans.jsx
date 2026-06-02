@@ -1,5 +1,6 @@
 // ── Plans Page — Home Plan + Gym Plan reference ──────────────────────────────
 import { useState } from 'react';
+import React from 'react';
 
 // ── shared helpers ────────────────────────────────────────────────────────────
 function Section({ title, children }) {
@@ -252,6 +253,204 @@ function HomePlan() {
 // ═══════════════════════════════════════════════════════════════════════════════
 // GYM PLAN
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Machine data — photo thumbnails from YouTube tutorials ───────────────────
+const MACHINES = [
+  {
+    name: 'Life Fitness — Angled Leg Press',
+    muscle: 'Quads · Glutes · Hamstrings',
+    videoId: 'IZxyjW7MPJQ',
+    badge: '⭐ Best for BG',
+    badgeColor: 'bg-green-100 text-green-700',
+    tip: 'Your #1 BG-lowering machine. 4 sets here can drop BG by 2 mmol/L.',
+  },
+  {
+    name: 'Plate-loaded Hack Squat',
+    muscle: 'Quads (deep) · Glutes',
+    videoId: 'EdtPMnMxKCo',
+    badge: 'Legs',
+    badgeColor: 'bg-purple-100 text-purple-700',
+    tip: 'Start with 2×10 kg plates only. Knees track toes throughout.',
+  },
+  {
+    name: 'Hip Thrust / Glute Machine',
+    muscle: 'Glutes · Posterior Chain',
+    videoId: 'LM8XHLYJoYs',
+    badge: 'Legs',
+    badgeColor: 'bg-purple-100 text-purple-700',
+    tip: 'Squeeze glutes hard at top and hold 2 sec every rep.',
+  },
+  {
+    name: 'Life Fitness — Horizontal Bench Press',
+    muscle: 'Chest · Triceps · Front Delts',
+    videoId: 'vcBig73ojpE',
+    badge: 'Push',
+    badgeColor: 'bg-blue-100 text-blue-700',
+    tip: 'Feet flat, slight arch, press through chest. 60 kg to start.',
+  },
+  {
+    name: 'Life Fitness — Decline Press',
+    muscle: 'Lower Chest · Triceps',
+    videoId: 'LfyQBUKR8SE',
+    badge: 'Push',
+    badgeColor: 'bg-blue-100 text-blue-700',
+    tip: 'Elbows at 45° — never flare straight out. Great lower chest builder.',
+  },
+  {
+    name: 'Hammer Strength — Chest / Incline Press',
+    muscle: 'Chest · Shoulders · Triceps',
+    videoId: 'vcBig73ojpE',
+    badge: 'Push',
+    badgeColor: 'bg-blue-100 text-blue-700',
+    tip: 'Plate-loaded — independent arm movement, great for symmetry.',
+  },
+  {
+    name: 'Cable Crossover / Pec Deck',
+    muscle: 'Inner Chest · Stretch',
+    videoId: 'taI4XduLpTk',
+    badge: 'Push',
+    badgeColor: 'bg-blue-100 text-blue-700',
+    tip: 'Light weight. Slow 3-sec return. Full chest stretch at start.',
+  },
+  {
+    name: 'Hoist — Lat Pulldown',
+    muscle: 'Lats · Biceps · Rear Delts',
+    videoId: 'CAwf7n6Luuc',
+    badge: 'Pull',
+    badgeColor: 'bg-red-100 text-red-700',
+    tip: 'Lean back 15°, pull to upper chest, drive elbows down and back.',
+  },
+  {
+    name: 'Hammer Strength — Seated Row',
+    muscle: 'Mid-back · Rhomboids · Biceps',
+    videoId: 'GZbfZ033f74',
+    badge: 'Pull',
+    badgeColor: 'bg-red-100 text-red-700',
+    tip: 'Pull to navel, squeeze shoulder blades at end. Keep back upright.',
+  },
+  {
+    name: 'Hoist — Preacher Curl (Biceps)',
+    muscle: 'Biceps Brachii',
+    videoId: 'fIWP-FRFNU0',
+    badge: 'Pull',
+    badgeColor: 'bg-red-100 text-red-700',
+    tip: 'Full ROM — extend fully at bottom. Squeeze hard at top for 1 sec.',
+  },
+  {
+    name: 'Hoist — Seated Dip (Triceps)',
+    muscle: 'Triceps (all 3 heads)',
+    videoId: '0326dy_-CzM',
+    badge: 'Push',
+    badgeColor: 'bg-blue-100 text-blue-700',
+    tip: 'Push straight down. Slow 2-sec return. Squeeze triceps at bottom.',
+  },
+  {
+    name: 'Treadmill',
+    muscle: 'Cardio · Glutes · Calves',
+    videoId: 'sSFmSVBIe-g',
+    badge: '⭐ Post-Legs Must',
+    badgeColor: 'bg-green-100 text-green-700',
+    tip: '15 min at incline 5–8%, speed 5.5 km/h after legs. Biggest BG drop.',
+  },
+];
+
+// ── Video Modal ───────────────────────────────────────────────────────────────
+function VideoModal({ machine, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      style={{ background: 'rgba(0,0,0,0.80)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Header */}
+        <div className="flex items-start justify-between p-4 border-b border-gray-100">
+          <div>
+            <h3 className="font-bold text-brand-700 text-sm leading-tight">{machine.name}</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{machine.muscle}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl leading-none ml-3">×</button>
+        </div>
+
+        {/* Video embed */}
+        <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${machine.videoId}?rel=0&modestbranding=1&autoplay=1`}
+            title={machine.name}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+
+        {/* Tip */}
+        <div className="p-4">
+          <div className="flex gap-2 items-start bg-brand-50 rounded-xl p-3">
+            <span className="text-lg flex-shrink-0">💡</span>
+            <p className="text-xs text-brand-700">{machine.tip}</p>
+          </div>
+          <button onClick={onClose}
+            className="mt-3 w-full py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Machine Gallery ───────────────────────────────────────────────────────────
+function MachineGallery() {
+  const [active, setActive] = React.useState(null);
+
+  return (
+    <div>
+      {active && <VideoModal machine={active} onClose={() => setActive(null)} />}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {MACHINES.map(m => (
+          <button
+            key={m.name}
+            type="button"
+            onClick={() => setActive(m)}
+            className="group rounded-2xl border border-gray-200 bg-white overflow-hidden hover:border-brand-400 hover:shadow-md transition-all text-left">
+
+            {/* Thumbnail */}
+            <div className="relative overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+              <img
+                src={`https://img.youtube.com/vi/${m.videoId}/mqdefault.jpg`}
+                alt={m.name}
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {/* Play overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-25 group-hover:bg-opacity-40 transition-all">
+                <div className="w-10 h-10 rounded-full bg-red-600 bg-opacity-90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                  <div className="w-0 h-0 ml-1"
+                    style={{ borderTop:'7px solid transparent', borderBottom:'7px solid transparent', borderLeft:'12px solid white' }} />
+                </div>
+              </div>
+              {/* Badge */}
+              <div className="absolute top-2 left-2">
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shadow-sm ${m.badgeColor}`}>
+                  {m.badge}
+                </span>
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="p-2.5">
+              <div className="text-xs font-semibold text-gray-800 leading-tight">{m.name}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{m.muscle}</div>
+              <div className="text-xs text-brand-500 mt-1 font-medium">▶ Tap to watch tutorial</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── GymPlan ───────────────────────────────────────────────────────────────────
 function GymPlan() {
   return (
     <div className="space-y-5">
@@ -261,110 +460,110 @@ function GymPlan() {
         Above 13 mmol/L → skip weights, light treadmill only. Bring dates to gym every session.
       </Alert>
 
+      {/* Machine Gallery */}
+      <Section title="🏋️ Your Gym Machines — Tap to Watch Tutorial">
+        <p className="text-xs text-gray-400 mb-3">Tap any machine photo to watch the tutorial video and see form tips.</p>
+        <MachineGallery />
+      </Section>
+
       {/* Weekly Schedule */}
       <Section title="📅 Weekly Gym Schedule">
         <Table
-          headers={['Day', 'Status', 'Session', 'Cardio', 'Notes']}
+          headers={['Day', 'Session', 'Key Machines', 'Cardio Finish']}
           rows={[
-            ['Saturday',  'Work — optional gym', 'Push — Chest & Shoulders', '10 min treadmill',       'Go if energy is good'],
-            ['Sunday',    'Work — GYM ✅',       'Push — Chest & Shoulders', '10 min treadmill',       'Core day. Never skip.'],
-            ['Monday',    'Work — GYM ✅',       'Pull — Back & Biceps',     '10 min bike/elliptical', 'Core day. Never skip.'],
-            ['Tuesday',   'Work — GYM ✅',       'Legs + Core',              '15 min treadmill walk',  'Core day. Never skip.'],
-            ['Wednesday', 'Work — GYM ✅',       'Metabolic Full Body',      'Built into session',     'Best fat-burn session.'],
-            ['Thursday',  'Football or gym',     'Upper Body (if no footy)', 'Football = full cardio', 'Football takes priority.'],
-            ['Friday',    'REST 🟢',             '—',                        'Home elliptical 30 min', 'Rest + meal prep.'],
+            ['Sunday ✅',    'Push — Chest & Shoulders', 'Bench Press · Decline · Seated Dip', 'Treadmill 10 min'],
+            ['Monday ✅',    'Pull — Back & Biceps',     'Lat Pulldown · Row · Preacher Curl',  'Bike 10 min'],
+            ['Tuesday ✅',   'Legs + Core',              'Leg Press · Hack Squat · Hip Thrust', 'Treadmill 15 min 🌟'],
+            ['Wednesday ✅', 'Metabolic Full Body',      'All machines — lighter, fast pace',   'Built into session'],
+            ['Thursday',    'Football or Upper Body',   'Bench · Lat Pulldown · Curls',        'Football = full cardio'],
+            ['Saturday',    'Push (optional)',           'Bench Press · Decline · Dip',         'Treadmill 10 min'],
+            ['Friday 🟢',   'REST',                     '—',                                   'Home elliptical 30 min'],
           ]}
         />
       </Section>
 
-      {/* Week 1-2 */}
-      <Section title="Week 1–2: Foundation (3 sets, 90s rest, light–moderate load)">
-        <div className="space-y-5">
+      {/* Push Day */}
+      <Section title="🔵 PUSH DAY — Chest · Shoulders · Triceps (Sun / Sat)">
+        <ExTable
+          headers={['Exercise','Machine','Sets','Reps','Load','Tip']}
+          rows={[
+            ['Horizontal Bench Press', 'Life Fitness', '4','10–12','60 kg start','Feet flat, press through chest'],
+            ['Decline Press',          'Life Fitness', '3','10–12','50 kg start','Elbows 45°, squeeze at top'],
+            ['Cable Crossover / Pec Deck','Cable stack','3','12–15','Moderate',  'Slow 3-sec return'],
+            ['Dumbbell Shoulder Press','Dumbbells',    '3','12',    '14–16 kg',  'Core tight, no back arch'],
+            ['Lateral Raises',         'Dumbbells',    '3','15',    '8–10 kg',   'Lead with elbows, stop at shoulder'],
+            ['Seated Dip',             'Hoist',        '3','12–15', 'Stack 6–8', 'Push down, slow return'],
+            ['Treadmill',              'Treadmill',    '—','10 min','Incline 5%','After weights, not before'],
+          ]}
+        />
+      </Section>
 
-          <div>
-            <div className="flex items-center gap-2 mb-2"><Tag color="blue">Day A — Push (Sun / Sat)</Tag><span className="text-xs text-gray-400">Chest · Shoulders · Triceps</span></div>
-            <ExTable
-              headers={['Exercise','Sets','Reps','Load','Technique']}
-              rows={[
-                ['Barbell bench press',      '3','12','60–70% 1RM','3 sec descent, pause, press'],
-                ['Incline dumbbell press',   '3','12','Moderate',   '30–45° incline'],
-                ['Cable / dumbbell flyes',   '3','12','Light',      'Squeeze chest at top'],
-                ['Seated dumbbell shoulder press','3','12','Moderate','Core tight, no arching'],
-                ['Lateral raises',           '3','15','Light',      'Lead with elbows, slow down'],
-                ['Tricep pushdowns (cable)', '3','12','Moderate',   'Elbows tucked to sides'],
-                ['Treadmill walk',           '—','10 min','Incline 3–5°','After weights, not before'],
-              ]}
-            />
-          </div>
+      {/* Pull Day */}
+      <Section title="🔴 PULL DAY — Back · Biceps (Mon)">
+        <ExTable
+          headers={['Exercise','Machine','Sets','Reps','Load','Tip']}
+          rows={[
+            ['Lat Pulldown',        'Hoist',          '4','10–12','Stack 8–10','Pull to upper chest, lean back 15°'],
+            ['Seated Cable Row',    'Cable station',  '3','10–12','Stack 8–10','Pull to navel, squeeze blades'],
+            ['Hammer Strength Row', 'Hammer Strength','3','10',    'Plate-load','Independent arms, great symmetry'],
+            ['Face Pulls',          'Cable (rope)',   '3','15–20', 'Light',     'Elbows high, thumbs toward ears'],
+            ['Preacher Curl',       'Hoist',          '3','10–12', 'Stack 6',   'Full ROM, squeeze at top 1 sec'],
+            ['Hammer Curl',         'Dumbbells',      '3','12',    '12–14 kg',  'Neutral grip, no swinging'],
+          ]}
+        />
+      </Section>
 
-          <div>
-            <div className="flex items-center gap-2 mb-2"><Tag color="green">Day B — Pull (Mon)</Tag><span className="text-xs text-gray-400">Back · Biceps · Rear delts</span></div>
-            <ExTable
-              headers={['Exercise','Sets','Reps','Load','Technique']}
-              rows={[
-                ['Lat pulldown',             '3','12','Moderate',  'Pull to upper chest, lean back slightly'],
-                ['Seated cable row',         '3','12','Moderate',  'Elbows back, squeeze shoulder blades'],
-                ['Dumbbell single-arm row',  '3','12ea','Moderate','Back flat, elbow drives back'],
-                ['Face pulls (cable)',       '3','15','Light',     'Elbows high, external rotation'],
-                ['Barbell / dumbbell curls', '3','12','Moderate',  'Full range, no swinging'],
-                ['Hammer curls',             '3','12','Moderate',  'Neutral grip, controlled'],
-                ['Bike / elliptical',        '—','10 min','Easy', 'Cool-down cardio'],
-              ]}
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 mb-2"><Tag color="purple">Day C — Legs + Core (Tue)</Tag><span className="text-xs text-gray-400">Quads · Hamstrings · Glutes · Core</span></div>
-            <ExTable
-              headers={['Exercise','Sets','Reps','Load','Technique']}
-              rows={[
-                ['Leg press',             '3','12','Moderate',     'Feet shoulder-width, full depth'],
-                ['Leg extension',         '3','12','Light–mod',    'Full extension, slow descent'],
-                ['Leg curl (lying)',       '3','12','Light–mod',    'Curl to 90°, control down'],
-                ['Calf raises (machine)', '3','15','Moderate',     'Full range, pause at top'],
-                ['Plank',                 '3','30–45s','Bodyweight','Straight line head to heel'],
-                ['Russian twists',        '3','20','Light plate',  'Rotate fully each side'],
-                ['Treadmill walk',        '—','15 min','Incline 4°','BEST session for BG drop'],
-              ]}
-            />
-            <Alert color="blue" icon="💡">
-              The 15-min treadmill walk after leg day is the single most effective blood sugar lowering session — legs use the most glucose of any muscle group.
-            </Alert>
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 mb-2"><Tag color="orange">Day D — Metabolic Full Body (Wed)</Tag><span className="text-xs text-gray-400">Circuits · Fat burn · BG control</span></div>
-            <p className="text-xs text-gray-500 mb-3">Do as supersets — A1 + A2 back to back, 60s rest, repeat × 3. Then B1 + B2, etc.</p>
-            <ExTable
-              headers={['Superset','Exercise','Sets','Reps','Load']}
-              rows={[
-                ['A1','Goblet squat',              '3','15','Moderate dumbbell'],
-                ['A2','Dumbbell Romanian deadlift', '3','12','Moderate'],
-                ['B1','Push-ups',                  '3','Max','Bodyweight'],
-                ['B2','Dumbbell bent-over row',    '3','12ea','Moderate'],
-                ['C1','Dumbbell shoulder press',   '3','12','Moderate'],
-                ['C2','Lateral raises',            '3','15','Light'],
-                ['D1','Dumbbell bicep curls',      '3','12','Moderate'],
-                ['D2','Mountain climbers',         '3','30s','Bodyweight'],
-              ]}
-            />
-          </div>
-
+      {/* Legs Day */}
+      <Section title="🟣 LEGS DAY — Quads · Glutes · Hamstrings (Tue) ⭐ Most Important for BG">
+        <Alert color="green" icon="🩸">
+          Legs Day = your biggest blood glucose session. The 15-min post-leg treadmill walk at 5% incline is mandatory — this alone can drop BG by 1.5–3 mmol/L.
+        </Alert>
+        <div className="mt-3">
+          <ExTable
+            headers={['Exercise','Machine','Sets','Reps','Load','Tip']}
+            rows={[
+              ['Angled Leg Press',   'Life Fitness',     '4','12–15','80–100 kg', 'Feet shoulder-width, push through heels'],
+              ['Hack Squat',         'Plate-loaded',     '3','10–12','2×10 kg',   'Lower slowly, knees track toes'],
+              ['Leg Extension',      'Machine',          '3','15',    'Stack 6–8', 'Full extension, squeeze quads 1 sec'],
+              ['Leg Curl',           'Machine',          '3','12–15', 'Stack 6–8', 'Curl fully, hold 1 sec, lower slow'],
+              ['Hip Thrust',         'Glute Machine',    '3','15',    'Moderate',  'Squeeze glutes at top, hold 2 sec'],
+              ['Calf Raises',        'Leg Press platform','4','20–25','Light',     'Full stretch at bottom, high rise'],
+              ['Treadmill incline',  'Treadmill',        '1','15 min','5.5 km/h', '🌟 MANDATORY. Incline 5–8%. Log your BG drop.'],
+            ]}
+          />
         </div>
       </Section>
 
-      {/* Week 3-4 */}
-      <Section title="Week 3–4: Progressive (4 sets, 60s rest, heavier load)">
-        <Alert color="amber" icon="📈">
-          Same split as Week 1–2. Increase to <b>4 sets</b>, drop rest to <b>60 seconds</b>, and add weight wherever you completed all reps comfortably in Week 2.
-          Rule: if you hit all reps with 1 RIR (rep in reserve), add 2.5–5 kg.
-        </Alert>
-        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[['Push','4 sets, 10 reps'],['Pull','4 sets, 10 reps'],['Legs','4 sets, 10 reps'],['Metabolic','4 rounds']].map(([d,n])=>(
-            <div key={d} className="bg-brand-50 rounded-xl p-3 text-center">
-              <div className="font-bold text-brand-700 text-sm">{d}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{n}</div>
-              <div className="text-xs text-gray-400">60s rest</div>
+      {/* Metabolic Day */}
+      <Section title="🟠 METABOLIC DAY — Full Body Circuit (Wed)">
+        <p className="text-xs text-gray-500 mb-3">Higher reps, 30s rest, all major machines. Biggest calorie burn + BG flush of the week.</p>
+        <ExTable
+          headers={['Exercise','Machine','Rounds','Reps','Load']}
+          rows={[
+            ['Leg Press — fast reps',    'Life Fitness', '3','20','50–60 kg'],
+            ['Lat Pulldown',             'Hoist',        '3','15','Stack 7'],
+            ['Horizontal Bench Press',   'Life Fitness', '3','15','40–50 kg'],
+            ['Seated Cable Row',         'Cable station','3','15','Stack 7'],
+            ['Seated Dip',               'Hoist',        '3','15','Stack 6'],
+            ['Treadmill / Step Machine', 'Cardio',       '1','15 min','Moderate'],
+          ]}
+        />
+      </Section>
+
+      {/* 8-Week Progression */}
+      <Section title="📈 8-Week Progressive Overload">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          {[
+            ['Week 1–2','🧱 Foundation','3 sets · 12–15 reps','Learn machines. Perfect form.'],
+            ['Week 3–4','🏗️ Build',    '3–4 sets · 10–12 reps','+5 kg legs, +2 kg upper.'],
+            ['Week 5–6','💪 Strength', '4 sets · 8–10 reps', 'Push heavier on compounds.'],
+            ['Week 7–8','🔥 Hypertrophy','4 sets · 10–12 reps','Add reps first, then weight.'],
+          ].map(([wk, phase, sets, note]) => (
+            <div key={wk} className="bg-brand-50 rounded-xl p-3">
+              <div className="text-xs text-gray-400">{wk}</div>
+              <div className="font-bold text-brand-700 text-sm mt-0.5">{phase}</div>
+              <div className="text-xs text-gray-600 mt-1">{sets}</div>
+              <div className="text-xs text-gray-400 mt-0.5">{note}</div>
             </div>
           ))}
         </div>
@@ -375,71 +574,37 @@ function GymPlan() {
         <Table
           headers={['Timing', 'What to Eat', 'Why']}
           rows={[
-            ['30–60 min before gym', '1 banana + 2–3 dates', 'Raises BG to safe zone (5–8 mmol/L). Fast energy.'],
-            ['During gym (if >60 min)', '200ml water + 2 dates', 'Prevent hypoglycaemia. Bring dates in pocket.'],
-            ['Within 30 min after gym', 'Protein-rich meal — eggs + chapati, or chicken + rice', 'Muscle repair. Keeps BG stable post-workout.'],
-            ['Dinner (gym day)', '3 chapati + sambar + lean protein. Eat by 9:30pm.', 'Don\'t skip dinner after gym. BG can drop overnight.'],
+            ['Pre-gym (30–60 min before)', '1 banana + 2–3 dates', 'Raises BG to safe zone (5–8 mmol/L). Fast energy.'],
+            ['During (if >60 min)',         '200 ml water + 2 dates', 'Prevents hypoglycaemia mid-session.'],
+            ['Post-gym (within 30 min)',    '3 boiled eggs + 2 chapati OR chicken + rice', 'Muscle repair + stable overnight BG.'],
+            ['Dinner (gym day)',            '3 chapati + sambar + protein. By 9:30 pm.', 'Never skip. BG can crash overnight after heavy training.'],
           ]}
         />
       </Section>
 
-      {/* Diabetic Safety */}
-      <Section title="🩸 Diabetic Safety Rules">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-brand-700">Before Every Session</h3>
-            {[
-              ['Below 4.0','Eat full meal. Do not train today.','red'],
-              ['4.0–5.0','Eat banana + dates. Wait 15 min then train.','amber'],
-              ['5.0–10.0','Safe to train. Go ahead.','green'],
-              ['10.0–13.0','Light session only. No heavy weights.','amber'],
-              ['Above 13.0','Skip weights. Light treadmill walk or rest.','red'],
-            ].map(([range, action, color])=>(
-              <div key={range} className={`flex gap-2.5 p-2.5 rounded-xl text-xs ${color==='red'?'bg-health-redBg':color==='amber'?'bg-health-amberBg':'bg-health-greenBg'}`}>
-                <span className={`font-bold shrink-0 ${color==='red'?'text-health-red':color==='amber'?'text-health-amber':'text-health-green'}`}>{range}</span>
-                <span className="text-gray-700">{action}</span>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-brand-700">Red Flags — Stop Immediately</h3>
-            {[
-              'Dizziness, trembling, or unusual sweating → eat dates, sit down, rest',
-              'Chest pain or shortness of breath at rest or during warm-up → stop, seek help',
-              'Severe knee or back pain → stop that exercise immediately, do not push through',
-              'BG above 13 mid-session → stop weights, drink water, do light walking',
-              'Persistent fatigue >3 days → may be overtraining or medication issue',
-            ].map((item,i)=>(
-              <div key={i} className="flex gap-2 p-2.5 bg-health-redBg rounded-xl text-xs text-gray-700">
-                <span className="text-health-red shrink-0">⛔</span>{item}
-              </div>
-            ))}
-          </div>
+      {/* BG Safety */}
+      <Section title="🩸 Blood Glucose Safety Rules">
+        <div className="space-y-2">
+          {[
+            ['Below 5.0 mmol/L', '🔵 Eat banana + dates. Wait 15 min. Re-check before starting.', 'bg-blue-50 text-blue-700'],
+            ['5–13 mmol/L',      '🟢 Safe to train. Full intensity. Have dates in your bag.',     'bg-green-50 text-green-700'],
+            ['Above 13 mmol/L',  '🔴 Skip weights. Light treadmill walk only. Hydrate well.',      'bg-red-50 text-red-700'],
+          ].map(([range, action, cls]) => (
+            <div key={range} className={`flex gap-3 items-start p-3 rounded-xl text-xs ${cls}`}>
+              <span className="font-bold flex-shrink-0 w-28">{range}</span>
+              <span>{action}</span>
+            </div>
+          ))}
         </div>
-      </Section>
-
-      {/* 12-week milestones */}
-      <Section title="🎯 12-Week Milestones">
-        <Table
-          headers={['Metric', 'Now', 'Week 4 Goal', 'Week 12 Goal']}
-          rows={[
-            ['HbA1c', '8.9%', 'Below 8.0%', 'Below 7.0%'],
-            ['Fasting BG', 'Elevated', '6–8 mmol/L', '5–7 mmol/L'],
-            ['Weight', 'Current', 'Lose 2–3 kg', 'Lose 8–10 kg total'],
-            ['Waist', 'Current', 'Reduce 3–5 cm', 'Healthy range (<90 cm)'],
-            ['LDL cholesterol', '4.12 mmol/L', 'Improving', 'Below 3.0 mmol/L'],
-            ['Vitamin D', '15.8 ng/mL', 'Supplement started', 'Above 30 ng/mL'],
-          ]}
-        />
+        <div className="mt-3 text-xs text-gray-400 bg-gray-50 rounded-xl p-3">
+          📱 Log your pre and post BG in the <b>Workout</b> tab every session. The app tracks your BG drop per session and shows it in Analysis.
+        </div>
       </Section>
 
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// MAIN PLANS PAGE
-// ═══════════════════════════════════════════════════════════════════════════════
 export default function Plans() {
   const [tab, setTab] = useState('home');
 
