@@ -33,12 +33,47 @@ const EXERCISE_TYPES = new Set(['gym_push','gym_pull','gym_legs','gym_metabolic'
 const CARDIO_TYPES   = new Set(['treadmill','cycling','step','step_cycling','home_cardio','football','badminton']);
 
 const EXERCISE_SUGGESTIONS = {
-  gym_push:       ['Barbell bench press','Dumbbell shoulder press','Cable flyes','Lateral raises','Tricep pushdowns','Push-ups'],
-  gym_pull:       ['Lat pulldown','Cable rows','Dumbbell rows','Face pulls','Bicep curls','Hammer curls'],
-  gym_legs:       ['Leg press','Leg extension','Leg curl','Calf raises','Planks','Russian twists'],
-  gym_metabolic:  ['Goblet squats','Romanian deadlift','Push-ups','Dumbbell rows','Shoulder press','Mountain climbers'],
-  gym_upper:      ['Pull-ups / lat pulldown','Chest press','Shoulder press','Rows','Curls','Triceps'],
-  home_resistance:['Barbell squats','Barbell rows','Dumbbell press','Chest expander pulls','Deadlift'],
+  gym_push: [
+    'Horizontal Bench Press (Life Fitness)',
+    'Decline Press (Life Fitness)',
+    'Seated Dip — Triceps (Hoist)',
+    'Cable Crossover / Pec Deck',
+    'Dumbbell Shoulder Press',
+    'Lateral Raises',
+  ],
+  gym_pull: [
+    'Lat Pulldown (Hoist)',
+    'Cable Rows / Seated Row',
+    'Preacher Curl — Biceps (Hoist)',
+    'Face Pulls (Cable)',
+    'Hammer Curl (Dumbbell)',
+    'Reverse Grip Pulldown',
+  ],
+  gym_legs: [
+    'Angled Leg Press (Life Fitness)',
+    'Hack Squat (Plate-loaded)',
+    'Leg Extension (Machine)',
+    'Leg Curl (Machine)',
+    'Calf Raises (Leg Press platform)',
+    'Hip Thrust / Glute Machine',
+  ],
+  gym_metabolic: [
+    'Angled Leg Press — light (Life Fitness)',
+    'Lat Pulldown (Hoist)',
+    'Horizontal Bench Press (Life Fitness)',
+    'Cable Rows',
+    'Dumbbell Shoulder Press',
+    'Seated Dip (Hoist)',
+  ],
+  gym_upper: [
+    'Horizontal Bench Press (Life Fitness)',
+    'Lat Pulldown (Hoist)',
+    'Cable Crossover',
+    'Preacher Curl (Hoist)',
+    'Seated Dip (Hoist)',
+    'Lateral Raises',
+  ],
+  home_resistance: ['Barbell squats','Barbell rows','Dumbbell press','Chest expander pulls','Deadlift'],
 };
 
 // Group types for display
