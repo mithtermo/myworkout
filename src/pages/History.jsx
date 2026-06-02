@@ -3,6 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { getVitals, deleteVitals, getMeals, deleteMeal, getWorkouts, deleteWorkout } from '../lib/supabase.js';
 
 const WORKOUT_LABELS = {
+  treadmill:'Treadmill', cycling:'Cycling', step:'Step Machine', step_cycling:'Step Cycling',
   gym_push:'Gym Push', gym_pull:'Gym Pull', gym_legs:'Gym Legs',
   gym_metabolic:'Gym Metabolic', gym_upper:'Gym Upper',
   home_resistance:'Home Resistance', home_cardio:'Home Cardio',
@@ -139,6 +140,7 @@ function WorkoutsHistory() {
                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                    <span className="badge bg-brand-100 text-brand-700">{WORKOUT_LABELS[w.type]||w.type}</span>
                    {w.duration_min && <span className="text-xs text-gray-400">{w.duration_min} min</span>}
+                  {w.distance_km && <span className="text-xs text-gray-400">📍 {w.distance_km} km</span>}
                    {w.pre_bg  && <span className="text-xs text-gray-400">Pre: {w.pre_bg} mmol/L</span>}
                    {w.post_bg && <span className="text-xs text-gray-400">Post: {w.post_bg} mmol/L</span>}
                  </div>

@@ -90,3 +90,7 @@ CREATE TABLE IF NOT EXISTS analyses (
 );
 ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public access" ON analyses FOR ALL USING (true) WITH CHECK (true);
+
+-- ── Migration: add distance_km to workouts ────────────────────────────────────
+-- Run this in Supabase SQL editor if you already created the workouts table
+ALTER TABLE workouts ADD COLUMN IF NOT EXISTS distance_km NUMERIC(5,2);

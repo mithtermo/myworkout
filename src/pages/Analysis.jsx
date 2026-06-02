@@ -9,7 +9,7 @@ import { getFullAnalysis, saveAnalysis, getAnalyses, isConfigured } from '../lib
 const BASELINE = { hba1c: 8.9, ldl: 4.12, hdl: 0.95, vitD: 15.8, alt: 48 };
 const WORKOUT_LABELS = {
   gym_push:'Push', gym_pull:'Pull', gym_legs:'Legs', gym_metabolic:'Metabolic',
-  gym_upper:'Upper', home_resistance:'Home Resistance', home_cardio:'Home Cardio',
+  gym_upper:'Upper', treadmill:'Treadmill', cycling:'Cycling', step:'Step Machine', step_cycling:'Step Cycling', home_resistance:'Home Resistance', home_cardio:'Home Cardio',
   football:'Football', badminton:'Badminton', rest:'Rest',
 };
 const MEAL_LABELS = { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner', snack:'Snack', pre_gym:'Pre-Gym', post_gym:'Post-Gym' };
