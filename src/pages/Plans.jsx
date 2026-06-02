@@ -106,6 +106,39 @@ const EX_VIDEO = {
   'Elliptical':                      'Yz0V7u7FhOk',
 };
 
+
+// ── Real gym machine photos (your actual gym in Muscat) ──────────────────────
+const GYM_PHOTOS = {
+  'Horizontal Bench Press':        'bench_press_label.jpg',
+  'Decline Press':                 'decline_press_label.jpg',
+  'Cable Crossover':               'cable_crossover.jpg',
+  'Pec Deck':                      'cable_crossover.jpg',
+  'Cable / dumbbell flyes':        'cable_crossover.jpg',
+  'Lat pulldown':                  'lat_pulldown.jpg',
+  'Lat Pulldown':                  'lat_pulldown.jpg',
+  'Preacher Curl':                 'preacher_curl.jpg',
+  'Barbell / dumbbell curls':      'preacher_curl.jpg',
+  'Seated Dip':                    'seated_dip.jpg',
+  'Tricep pushdowns':              'seated_dip.jpg',
+  'Hack Squat':                    'hack_squat.jpg',
+  'Leg press':                     'leg_press_label.jpg',
+  'Angled Leg Press':              'leg_press_label.jpg',
+  'Hip Thrust':                    'hip_thrust.jpg',
+  'Seated cable row':              'hammer_strength_row.jpg',
+  'Seated Cable Row':              'hammer_strength_row.jpg',
+  'Hammer Strength Row':           'hammer_strength_row.jpg',
+  'Dumbbell single-arm row':       'hammer_strength_row.jpg',
+  'Hammer Strength':               'hammer_chest_press.jpg',
+};
+
+function gymPhoto(name) {
+  const lower = name.toLowerCase().split('(')[0].trim();
+  const key = Object.keys(GYM_PHOTOS).find(k =>
+    lower.includes(k.toLowerCase()) || k.toLowerCase().includes(lower)
+  );
+  return key ? `${import.meta.env.BASE_URL}machines/${GYM_PHOTOS[key]}` : null;
+}
+
 // Mini photo modal (image full-size + video)
 function PhotoModal({ name, videoId, onClose }) {
   const photo = gymPhoto(name);
